@@ -1,0 +1,926 @@
+<title>PLiftable, explained for your first week — Issue #803</title>
+<script>
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('plutarch-learn-theme'); } catch (e) {}
+    document.documentElement.setAttribute('data-theme', saved === 'dark' ? 'dark' : 'light');
+  })();
+</script>
+<style>
+  :root {
+    --paper: #EDF0F0;
+    --paper-raised: #F7F9F9;
+    --paper-sunken: #E3E7E7;
+    --ink: #172029;
+    --ink-muted: #545F69;
+    --ink-faint: #7C8791;
+    --violet: #6C4BB6;
+    --violet-strong: #4E3585;
+    --teal: #1E7566;
+    --amber: #9C6B14;
+    --border: #C9D0D3;
+    --border-strong: #AEB7BB;
+    --code-bg: #E3E7E7;
+    --code-border: #CBD2D4;
+    --shadow: rgba(23, 32, 41, 0.10);
+    --link: var(--violet-strong);
+
+    --font-display: "Iowan Old Style", "Palatino Linotype", "Sitka Text", Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14181C; --paper-raised: #1A2126; --paper-sunken: #101417;
+      --ink: #E7EAEA; --ink-muted: #9BA5AC; --ink-faint: #6E7880;
+      --violet: #AB90EE; --violet-strong: #C7B4F2; --teal: #5FC9B4; --amber: #E0A94B;
+      --border: #2B3339; --border-strong: #3A444B; --code-bg: #1B2226; --code-border: #2E373D;
+      --shadow: rgba(0, 0, 0, 0.4); --link: var(--violet);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14181C; --paper-raised: #1A2126; --paper-sunken: #101417;
+    --ink: #E7EAEA; --ink-muted: #9BA5AC; --ink-faint: #6E7880;
+    --violet: #AB90EE; --violet-strong: #C7B4F2; --teal: #5FC9B4; --amber: #E0A94B;
+    --border: #2B3339; --border-strong: #3A444B; --code-bg: #1B2226; --code-border: #2E373D;
+    --shadow: rgba(0, 0, 0, 0.4); --link: var(--violet);
+  }
+  :root[data-theme="light"] {
+    --paper: #EDF0F0; --paper-raised: #F7F9F9; --paper-sunken: #E3E7E7;
+    --ink: #172029; --ink-muted: #545F69; --ink-faint: #7C8791;
+    --violet: #6C4BB6; --violet-strong: #4E3585; --teal: #1E7566; --amber: #9C6B14;
+    --border: #C9D0D3; --border-strong: #AEB7BB; --code-bg: #E3E7E7; --code-border: #CBD2D4;
+    --shadow: rgba(23, 32, 41, 0.10); --link: var(--violet-strong);
+  }
+
+  * { box-sizing: border-box; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--font-body); font-size: 16.5px; line-height: 1.65; overflow-x: hidden;
+  }
+  a { color: var(--link); }
+  a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--violet); outline-offset: 2px; border-radius: 2px;
+  }
+  code, pre, kbd { font-family: var(--font-mono); }
+  code {
+    background: var(--code-bg); border: 1px solid var(--code-border);
+    padding: 0.05em 0.4em; border-radius: 3px; font-size: 0.88em;
+  }
+
+  .theme-toggle {
+    position: fixed; top: 1.1rem; right: 1.1rem; z-index: 10;
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--ink-muted); background: var(--paper-raised); border: 1px solid var(--border);
+    border-radius: 5px; padding: 0.4rem 0.7rem; cursor: pointer;
+  }
+  .theme-toggle:hover { color: var(--ink); border-color: var(--border-strong); }
+
+  .page {
+    max-width: 1180px; margin: 0 auto; padding: 0 clamp(1.1rem, 3vw, 2.5rem);
+    display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.5rem);
+  }
+  @media (max-width: 900px) {
+    .page { grid-template-columns: 1fr; }
+    .rail { display: none; }
+  }
+
+  .masthead {
+    grid-column: 1 / -1; padding: clamp(2.2rem, 6vw, 3.6rem) 0 clamp(1.6rem, 4vw, 2.2rem);
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .eyebrow .sep { margin: 0 0.5em; opacity: 0.5; }
+  .eyebrow.rookie { color: var(--violet-strong); }
+  h1.title {
+    font-family: var(--font-display); font-weight: 600; font-size: clamp(1.9rem, 4vw, 2.5rem);
+    line-height: 1.2; margin: 0.5rem 0 0.7rem; text-wrap: balance; max-width: 24ch;
+  }
+  .dek { font-size: 1.08rem; color: var(--ink-muted); max-width: 64ch; margin: 0 0 1.3rem; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; align-items: center; }
+  .meta-chip {
+    font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-muted);
+    border: 1px solid var(--border); background: var(--paper-raised); padding: 0.3rem 0.65rem; border-radius: 4px;
+  }
+  .also-see { font-size: 0.86rem; color: var(--ink-muted); margin-top: 0.9rem; }
+
+  .rail {
+    position: sticky; top: 1.5rem; align-self: start; padding-top: 2.2rem;
+    max-height: calc(100vh - 3rem); overflow-y: auto;
+  }
+  .rail-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 0.7rem;
+  }
+  .rail ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--border); }
+  .rail a {
+    display: block; padding: 0.3rem 0 0.3rem 0.85rem; margin-left: -1px; border-left: 2px solid transparent;
+    font-size: 0.83rem; color: var(--ink-muted); text-decoration: none; line-height: 1.3;
+  }
+  .rail a:hover { color: var(--ink); }
+  .rail a.active { color: var(--violet-strong); border-left-color: var(--violet); font-weight: 600; }
+
+  .nav-mobile { display: none; grid-column: 1 / -1; margin: 1rem 0 0; }
+  @media (max-width: 900px) { .nav-mobile { display: block; } }
+  .nav-mobile summary {
+    cursor: pointer; font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--ink-muted); padding: 0.6rem 0;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .nav-mobile ul { list-style: none; padding: 0.6rem 0 0.9rem 0.2rem; margin: 0; columns: 2; gap: 1rem; }
+  .nav-mobile a { color: var(--ink-muted); text-decoration: none; font-size: 0.86rem; display: block; padding: 0.2rem 0; }
+
+  main.doc { min-width: 0; padding-bottom: 5rem; }
+  section.chapter { padding-top: clamp(2.2rem, 5vw, 3.2rem); max-width: 76ch; }
+  section.chapter + section.chapter { border-top: 1px solid var(--border); }
+  .chapter-head { display: flex; align-items: baseline; gap: 0.65rem; margin-bottom: 0.9rem; }
+  .chapter-num { font-family: var(--font-mono); font-size: 0.95rem; color: var(--violet); font-weight: 600; }
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; margin: 0; text-wrap: balance; }
+  h3 { font-family: var(--font-display); font-weight: 600; font-size: 1.12rem; margin: 1.6rem 0 0.6rem; }
+  p { margin: 0 0 1rem; }
+  .lede { font-size: 1.04rem; color: var(--ink-muted); }
+  ul.plain, ol.plain { margin: 0 0 1rem; padding-left: 1.3rem; }
+  ul.plain li, ol.plain li { margin-bottom: 0.5rem; }
+  ol.steps { margin: 0 0 1rem; padding-left: 1.3rem; }
+  ol.steps li { margin-bottom: 0.7rem; }
+  strong { color: var(--ink); }
+  .small-note { font-size: 0.86rem; color: var(--ink-muted); }
+
+  .code-block {
+    margin: 1.1rem 0 1.4rem; border: 1px solid var(--code-border); border-radius: 6px;
+    overflow: hidden; background: var(--code-bg);
+  }
+  .code-tab {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.04em; color: var(--ink-faint);
+    padding: 0.45rem 0.85rem; border-bottom: 1px solid var(--code-border); background: var(--paper-sunken);
+  }
+  .code-block pre { margin: 0; padding: 0.9rem 1rem; overflow-x: auto; font-size: 0.86rem; line-height: 1.55; }
+  .code-block code { background: none; border: none; padding: 0; font-size: 1em; }
+
+  .table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 0.55rem 0.9rem 0.55rem 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; border-bottom: 1px solid var(--border-strong);
+  }
+  td code, th code { white-space: nowrap; }
+
+  /* glossary */
+  .glossary { margin: 1.2rem 0 1.6rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  @media (max-width: 700px) { .glossary { grid-template-columns: 1fr; } }
+  .gloss-group { padding: 1.1rem 1.3rem; border-top: 1px solid var(--border); }
+  .gloss-group:nth-child(-n+2) { border-top: none; }
+  .glossary { background: var(--paper-raised); }
+  .gloss-group-title {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--teal); margin-bottom: 0.7rem;
+  }
+  .gloss-entry { margin-bottom: 0.75rem; }
+  .gloss-entry:last-child { margin-bottom: 0; }
+  .gloss-term { font-family: var(--font-mono); font-weight: 600; font-size: 0.9rem; display: block; }
+  .gloss-def { font-size: 0.86rem; color: var(--ink-muted); line-height: 1.5; }
+
+  /* interlinear gloss (Term s a) */
+  .term-gloss {
+    display: flex; flex-wrap: wrap; gap: 1.6rem 2.2rem; margin: 1.4rem 0 1.6rem;
+    padding: 1.3rem 1.4rem 1rem; background: var(--paper-raised); border: 1px solid var(--border); border-radius: 6px;
+  }
+  .term-gloss .g-token { display: flex; flex-direction: column; align-items: flex-start; max-width: 15rem; }
+  .term-gloss .g-token .tok { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 600; color: var(--ink); }
+  .term-gloss .g-token .tick { width: 100%; height: 0.7rem; border-left: 1.5px solid var(--violet); border-bottom: 1.5px solid var(--violet); margin: 0.15rem 0 0.45rem; }
+  .term-gloss .g-token .cap { font-size: 0.83rem; color: var(--ink-muted); line-height: 1.45; }
+
+  /* flow */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 1.2rem 0 1.6rem; font-family: var(--font-mono); font-size: 0.86rem; }
+  .flow .node { background: var(--paper-raised); border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem 0.8rem; color: var(--ink); text-align: center; }
+  .flow .arrow { color: var(--ink-faint); font-size: 0.8rem; white-space: nowrap; text-align: center; }
+  .flow .arrow .fn { display: block; color: var(--violet-strong); font-size: 0.72rem; }
+  .flow.wrap { flex-direction: column; align-items: stretch; }
+  .flow.wrap .node, .flow.wrap .arrow { width: 100%; }
+  .flow.wrap .arrow { padding: 0.15rem 0; }
+
+  /* commutative diagram */
+  .lift-diagram { margin: 1.6rem 0 1rem; padding: 2.2rem 1.4rem 1.6rem; background: var(--paper-raised); border: 1px solid var(--border); border-radius: 6px; overflow-x: auto; }
+  .lift-row { display: flex; align-items: stretch; gap: 0; min-width: 640px; }
+  .lift-node { flex: 0 0 auto; width: 12.5rem; text-align: center; padding: 0.9rem 0.7rem; border: 1.5px solid var(--border-strong); border-radius: 6px; background: var(--paper); }
+  .lift-node .n-label { font-family: var(--font-mono); font-weight: 600; font-size: 0.98rem; }
+  .lift-node .n-cap { font-size: 0.78rem; color: var(--ink-muted); margin-top: 0.3rem; }
+  .lift-hop { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.35rem; min-width: 8rem; padding: 0 0.6rem; }
+  .hop-arrow { font-family: var(--font-mono); font-size: 0.74rem; display: flex; align-items: center; gap: 0.35rem; color: var(--ink-muted); }
+  .hop-arrow .glyph { color: var(--teal); font-size: 0.9rem; }
+  .hop-arrow.back .glyph { color: var(--amber); }
+  .composite { display: flex; align-items: center; gap: 0; min-width: 640px; margin: 0.9rem 0; }
+  .composite .line { flex: 1 1 auto; height: 1px; background: var(--violet); }
+  .composite .label { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; color: var(--violet-strong); background: var(--paper-raised); padding: 0 0.8rem; white-space: nowrap; }
+  .composite .head { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+  .composite.top .head { border-left: 7px solid var(--violet); }
+  .composite.bottom .head { border-right: 7px solid var(--violet); order: -1; }
+  .diagram-caption { font-size: 0.82rem; color: var(--ink-faint); margin-top: 0.9rem; }
+
+  .law-block { margin: 1.2rem 0 1.6rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .law { display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; padding: 0.85rem 1.1rem; align-items: center; }
+  .law + .law { border-top: 1px solid var(--border); }
+  .law.consequence { background: var(--paper-raised); }
+  .law-tag { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-faint); }
+  .law-eq { font-family: var(--font-mono); font-size: 0.98rem; }
+  .law-eq .op { color: var(--violet-strong); margin: 0 0.4em; }
+  .law-plain { font-size: 0.88rem; color: var(--ink-muted); padding: 0.7rem 1.1rem 0; margin: 0; }
+
+  /* callouts, incl. rookie "explain" variant */
+  .callout { margin: 1.3rem 0; padding: 0.95rem 1.2rem 1.1rem; border-top: 2px solid var(--border-strong); background: var(--paper-raised); }
+  .callout-tag { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); display: block; margin-bottom: 0.4rem; }
+  .callout.watch { border-top-color: var(--amber); }
+  .callout.watch .callout-tag { color: var(--amber); }
+  .callout.check { border-top-color: var(--teal); }
+  .callout.check .callout-tag { color: var(--teal); }
+  .callout.explain { border-top-color: var(--violet); }
+  .callout.explain .callout-tag { color: var(--violet-strong); }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* unit vs property compare */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.2rem 0 1.6rem; }
+  @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
+  .compare-card { border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.15rem; background: var(--paper-raised); }
+  .compare-card h4 {
+    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase;
+    margin: 0 0 0.55rem; color: var(--ink);
+  }
+  .compare-card p { font-size: 0.88rem; color: var(--ink-muted); margin-bottom: 0.6rem; }
+  .compare-card code.snip { display: block; font-size: 0.78rem; padding: 0.5rem 0.6rem; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; white-space: pre-wrap; }
+
+  /* coverage grid */
+  .coverage { margin: 1.2rem 0 1.6rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .cov-row { display: grid; grid-template-columns: 13rem 6.5rem 1fr; gap: 1rem; align-items: start; padding: 0.75rem 1.1rem; }
+  .cov-row + .cov-row { border-top: 1px solid var(--border); }
+  .cov-row.head { background: var(--paper-sunken); font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+  .cov-type { font-family: var(--font-mono); font-size: 0.9rem; }
+  .pill { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.03em; text-transform: uppercase; font-weight: 600; padding: 0.18rem 0.5rem; border-radius: 4px; display: inline-block; white-space: nowrap; }
+  .pill.covered { color: var(--teal); background: color-mix(in srgb, var(--teal) 16%, transparent); }
+  .pill.gap { color: var(--amber); background: color-mix(in srgb, var(--amber) 18%, transparent); }
+  .cov-note { font-size: 0.86rem; color: var(--ink-muted); }
+  @media (max-width: 640px) { .cov-row { grid-template-columns: 1fr; gap: 0.3rem; } .lift-row, .composite { min-width: 0; } }
+
+  /* attack list */
+  .attack { list-style: none; margin: 1.2rem 0 1.6rem; padding: 0; counter-reset: attack; }
+  .attack li { counter-increment: attack; display: grid; grid-template-columns: 2.2rem 1fr; gap: 0.9rem; padding: 0.9rem 0; }
+  .attack li + li { border-top: 1px solid var(--border); }
+  .attack li::before { content: counter(attack); font-family: var(--font-mono); font-size: 1.1rem; color: var(--ink-faint); font-weight: 600; }
+  .attack-head { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.25rem; }
+  .attack-title { font-family: var(--font-mono); font-weight: 600; font-size: 0.95rem; }
+  .tag { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--violet-strong); border: 1px solid var(--violet); border-radius: 3px; padding: 0.08rem 0.4rem; }
+  .attack p { margin: 0; font-size: 0.92rem; color: var(--ink-muted); }
+
+  /* workflow steps (final section) */
+  .workflow { counter-reset: wf; margin: 1.2rem 0 1.6rem; padding: 0; list-style: none; }
+  .workflow li { counter-increment: wf; display: grid; grid-template-columns: 2.2rem 1fr; gap: 1rem; padding: 0.9rem 0; }
+  .workflow li + li { border-top: 1px solid var(--border); }
+  .workflow li::before {
+    content: counter(wf); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;
+    color: var(--paper); background: var(--violet); border-radius: 50%;
+    width: 1.6rem; height: 1.6rem; display: flex; align-items: center; justify-content: center;
+  }
+  .workflow .wf-title { font-weight: 600; margin-bottom: 0.2rem; }
+  .workflow p { margin: 0; font-size: 0.92rem; color: var(--ink-muted); }
+
+  .closing {
+    grid-column: 1 / -1;
+    margin: 0 0 2rem;
+    padding: 1.6rem 1.8rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-width: 76ch;
+  }
+  .closing p { font-size: 1rem; color: var(--ink); margin-bottom: 0.8rem; }
+  .closing p:last-child { margin-bottom: 0; color: var(--ink-muted); font-size: 0.92rem; }
+
+  footer.colophon { grid-column: 1 / -1; border-top: 1px solid var(--border); padding: 1.6rem 0 2.5rem; font-size: 0.82rem; color: var(--ink-faint); }
+
+  /* ---------- print ---------- */
+  @media print {
+    :root, :root[data-theme="dark"], :root[data-theme="light"] {
+      --paper: #ffffff; --paper-raised: #f5f6f6; --paper-sunken: #eef0f0;
+      --ink: #111418; --ink-muted: #3c454d; --ink-faint: #5b646c;
+      --border: #cfd5d8; --border-strong: #aab2b6;
+      --code-bg: #f0f1f1; --code-border: #d8dcdd;
+    }
+    .theme-toggle, .rail, .nav-mobile { display: none !important; }
+    .page { grid-template-columns: 1fr; max-width: 100%; }
+    main.doc { padding-bottom: 0; }
+    section.chapter { break-inside: avoid-page; page-break-inside: avoid; }
+    .code-block, .table-wrap, .lift-diagram, .coverage, .law-block, .glossary, .compare,
+    .term-gloss, .callout, .flow, table {
+      break-inside: avoid; page-break-inside: avoid;
+    }
+    /* no component should need its own scrollbar on paper */
+    .code-block pre, .table-wrap, .lift-diagram { overflow: visible !important; }
+    .lift-row {
+      flex-direction: column; align-items: stretch; min-width: 0;
+    }
+    .lift-node { width: 100%; }
+    .lift-hop { flex-direction: row; justify-content: flex-start; gap: 1.2rem; padding: 0.35rem 0; }
+    .composite { min-width: 0; }
+    .cov-row { grid-template-columns: 1fr; gap: 0.3rem; }
+    .glossary { grid-template-columns: 1fr; }
+    .compare { grid-template-columns: 1fr; }
+  }
+</style>
+
+<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle light and dark theme">Light / Dark</button>
+
+<div class="page">
+  <header class="masthead">
+    <div class="eyebrow rookie">Rookie edition<span class="sep">&middot;</span>Learner note<span class="sep">&middot;</span>Plutonomicon / plutarch&#8209;plutus #803</div>
+    <h1 class="title">So you want to fix issue #803. Let's start from zero.</h1>
+    <p class="dek">This assumes nothing: not Haskell, not blockchain, not even much programming experience
+      yet. Every unfamiliar word gets defined before it's used. Take your time &mdash; nobody was born
+      knowing what <code>PLiftable</code> means.</p>
+    <div class="meta-row">
+      <span class="meta-chip">Audience: brand new to software engineering</span>
+      <span class="meta-chip">No Haskell required going in</span>
+      <span class="meta-chip">github.com/Plutonomicon/plutarch-plutus/issues/803</span>
+    </div>
+    <p class="also-see">Already comfortable with Haskell and just want the fast version? See
+      <a href="LEARN-803-PLiftable.html">LEARN-803-PLiftable.html</a> in this same folder.</p>
+  </header>
+
+  <nav class="rail">
+    <div class="rail-label">On this page</div>
+    <ol>
+      <li><a href="#glossary">00&nbsp;&middot;&nbsp;Words you'll meet</a></li>
+      <li><a href="#world">01&nbsp;&middot;&nbsp;The world this code lives in</a></li>
+      <li><a href="#primer">02&nbsp;&middot;&nbsp;A Haskell primer, from zero</a></li>
+      <li><a href="#liftable">03&nbsp;&middot;&nbsp;What PLiftable promises</a></li>
+      <li><a href="#testing">04&nbsp;&middot;&nbsp;How computers check this</a></li>
+      <li><a href="#gap">05&nbsp;&middot;&nbsp;Where the gap actually is</a></li>
+      <li><a href="#fix">06&nbsp;&middot;&nbsp;The fix, step by step</a></li>
+      <li><a href="#build">07&nbsp;&middot;&nbsp;Build &amp; run</a></li>
+      <li><a href="#order">08&nbsp;&middot;&nbsp;Order of attack</a></li>
+      <li><a href="#files">09&nbsp;&middot;&nbsp;Key files</a></li>
+      <li><a href="#pr">10&nbsp;&middot;&nbsp;Into a real pull request</a></li>
+    </ol>
+  </nav>
+
+  <main class="doc">
+
+    <details class="nav-mobile">
+      <summary>On this page</summary>
+      <ul>
+        <li><a href="#glossary">00 &middot; Glossary</a></li>
+        <li><a href="#world">01 &middot; The world</a></li>
+        <li><a href="#primer">02 &middot; Primer</a></li>
+        <li><a href="#liftable">03 &middot; PLiftable</a></li>
+        <li><a href="#testing">04 &middot; Testing 101</a></li>
+        <li><a href="#gap">05 &middot; The gap</a></li>
+        <li><a href="#fix">06 &middot; The fix</a></li>
+        <li><a href="#build">07 &middot; Build &amp; run</a></li>
+        <li><a href="#order">08 &middot; Order of attack</a></li>
+        <li><a href="#files">09 &middot; Key files</a></li>
+        <li><a href="#pr">10 &middot; Pull request</a></li>
+      </ul>
+    </details>
+
+    <section class="chapter" id="glossary">
+      <div class="chapter-head"><span class="chapter-num">00</span><h2>Words you'll meet along the way</h2></div>
+      <p class="lede">This one issue touches four different worlds at once: general software
+        engineering, Haskell, blockchain, and open-source teamwork. You don't need to master any
+        of them before starting &mdash; you just need a place to look words up when they show up.
+        Bookmark this section and come back to it.</p>
+
+      <div class="glossary">
+        <div class="gloss-group">
+          <div class="gloss-group-title">General software engineering</div>
+          <div class="gloss-entry"><span class="gloss-term">repository ("repo")</span><span class="gloss-def">A folder of code tracked by Git, with the full history of every change ever made to it.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">issue</span><span class="gloss-def">A tracked to-do item, bug report, or idea on GitHub. #803 is one of these.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">pull request (PR)</span><span class="gloss-def">A proposed change to a repo, submitted for a maintainer to review before it's merged in.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">compile / build</span><span class="gloss-def">Turning source code into something that can actually run, catching many mistakes along the way &mdash; before you ever execute the program.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">test</span><span class="gloss-def">Code that runs your code and automatically checks the result is what you expected, so a human doesn't have to check by hand every single time.</span></div>
+        </div>
+        <div class="gloss-group">
+          <div class="gloss-group-title">Haskell basics</div>
+          <div class="gloss-entry"><span class="gloss-term">type</span><span class="gloss-def">A label describing what kind of value something is (a whole number, some text, a list...) so the compiler can catch mismatches before anything runs.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">function</span><span class="gloss-def">A rule that turns an input into an output. In Haskell, functions are ordinary values &mdash; you can pass one around just like a number or a string.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">typeclass</span><span class="gloss-def">A named set of behaviors a type can promise to support. If you know "interface" from another language, it's that idea &mdash; "this type can be compared," "this type can be printed," and so on.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">instance</span><span class="gloss-def">The actual code that fulfills a typeclass's promise for one specific type.</span></div>
+        </div>
+        <div class="gloss-group">
+          <div class="gloss-group-title">Blockchain &amp; Plutarch</div>
+          <div class="gloss-entry"><span class="gloss-term">Cardano</span><span class="gloss-def">A blockchain: a shared ledger that many independent computers agree on, with no single central authority in charge.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">smart contract</span><span class="gloss-def">A program that runs as part of a blockchain transaction and enforces rules &mdash; e.g. "only release these funds if this condition holds."</span></div>
+          <div class="gloss-entry"><span class="gloss-term">Plutarch</span><span class="gloss-def">A Haskell library for writing Cardano smart contracts. This whole repo.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">eDSL</span><span class="gloss-def">"Embedded domain-specific language" &mdash; a mini-language for one narrow job, built inside a bigger host language's syntax. Plutarch code looks like Haskell, but it actually describes a separate program.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">UPLC</span><span class="gloss-def">The low-level language the blockchain actually executes. Plutarch compiles down to this.</span></div>
+        </div>
+        <div class="gloss-group">
+          <div class="gloss-group-title">Testing, specifically</div>
+          <div class="gloss-entry"><span class="gloss-term">QuickCheck</span><span class="gloss-def">A Haskell library that generates lots of random inputs automatically to check that a general rule holds.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">property-based test</span><span class="gloss-def">A test that states a rule ("doing X then undoing X gets you back to where you started") and lets the computer try hundreds of random inputs against it, instead of a human writing a handful of examples.</span></div>
+          <div class="gloss-entry"><span class="gloss-term">orphan instance</span><span class="gloss-def">An instance written somewhere other than next to the typeclass or the type it's for &mdash; usually because you don't own either one. Allowed, if a little frowned upon in general; totally normal in test code.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="world">
+      <div class="chapter-head"><span class="chapter-num">01</span><h2>The world this code lives in</h2></div>
+      <p><strong>Cardano</strong> is a blockchain &mdash; picture a shared ledger copied across
+        thousands of independent computers, all of which must independently agree on every
+        transaction, with nobody in charge of the master copy. People write <strong>smart
+        contracts</strong> &mdash; small programs enforcing rules like "only pay this out if
+        condition Y is met" &mdash; that run as part of those transactions.</p>
+      <p><strong>Plutarch</strong> is the tool this repository builds: a Haskell library for
+        writing those smart contracts. It's an <strong>eDSL</strong> &mdash; the code you write
+        looks like ordinary Haskell, uses Haskell's syntax and tooling, but it isn't directly
+        <em>executed</em> the way a normal Haskell program is. Instead, it <em>describes</em> a
+        separate program, which then gets compiled down to <strong>UPLC</strong>, the actual
+        low-level bytecode the blockchain runs:</p>
+
+      <div class="flow" role="img" aria-label="Diagram: your Plutarch code compiles to UPLC, which runs on the Cardano network">
+        <span class="node">Your Plutarch code<br>(looks like Haskell)</span>
+        <span class="arrow"><span class="fn">compiles to</span>&rarr;</span>
+        <span class="node">UPLC<br>(on-chain bytecode)</span>
+        <span class="arrow"><span class="fn">runs on</span>&rarr;</span>
+        <span class="node">Cardano<br>(thousands of computers re-check the result)</span>
+      </div>
+
+      <div class="callout explain">
+        <span class="callout-tag">Why this matters for issue #803</span>
+        <p>Smart contracts often move real money or real assets, and blockchain transactions are
+          very hard (often impossible) to undo once confirmed. A subtle bug that a normal app
+          could patch tomorrow can, here, mean an unrecoverable loss today. That's why this
+          codebase leans so heavily on formal <strong>laws</strong> (rules a piece of code must
+          always satisfy) and automated tests that check those laws relentlessly, instead of just
+          trusting a human read-through. Issue #803 is about extending exactly that safety net.</p>
+      </div>
+    </section>
+
+    <section class="chapter" id="primer">
+      <div class="chapter-head"><span class="chapter-num">02</span><h2>A Haskell-flavored primer, from zero</h2></div>
+      <p>In Haskell, every value has a <strong>type</strong>: a label telling you (and the
+        compiler) what kind of thing it is. For example, the number <code>5</code> has type
+        <code>Int</code> &mdash; written <code>5 :: Int</code>, read aloud as "5, of type Int."
+        This lets the compiler catch a whole category of mistakes &mdash; like trying to add a
+        number to a piece of text &mdash; before the program ever runs.</p>
+
+      <p>Plutarch's own types are prefixed with a capital <code>P</code>:
+        <code>PInteger</code>, <code>PBool</code>, <code>PMaybe</code>, <code>PEither</code>,
+        <code>PPair</code>, <code>PRational</code>. That prefix is your visual cue: "this is a
+        Plutarch (on-chain) type, not a plain Haskell one."</p>
+
+      <p>These types have an unusual shape. An ordinary Haskell type just <em>is</em> a type. A
+        Plutarch type like <code>PInteger</code> is a little factory that, given a phantom
+        "scope" tag conventionally called <code>s</code>, produces a type. You'll see this
+        written as kind <code>S -> Type</code> &mdash; don't worry about the word "kind" beyond
+        "a type for types." The <code>s</code>/<code>S</code> pattern plays exactly the role that
+        <code>s</code> plays in Haskell's <code>ST s a</code>, if you've seen that before; if not,
+        just know: you thread it through, you almost never build it yourself.</p>
+
+      <h3>The single most important idea: <code>Term s a</code> is not a value</h3>
+      <p>A value of Plutarch-type <code>a</code> is written <code>Term s a</code>. Read
+        <code>Term</code> as "a fragment of program", not "a value sitting in memory." It's more
+        like a quoted piece of code &mdash; an instruction that, once compiled and actually run,
+        <em>produces</em> a value of type <code>a</code>. This trips up almost everyone on their
+        first day with Plutarch, so here's the whole type broken into pieces:</p>
+
+      <div class="term-gloss" role="img" aria-label="Annotated breakdown of the type Term s PInteger">
+        <div class="g-token">
+          <span class="tok">Term</span>
+          <span class="tick"></span>
+          <span class="cap">a program fragment &mdash; compiled code, not a Haskell value sitting in memory</span>
+        </div>
+        <div class="g-token">
+          <span class="tok">s</span>
+          <span class="tick"></span>
+          <span class="cap">the phantom scope tag mentioned above &mdash; carry it, don't build it</span>
+        </div>
+        <div class="g-token">
+          <span class="tok">PInteger</span>
+          <span class="tick"></span>
+          <span class="cap">the <em>on-chain</em> integer type &mdash; not the same thing as Haskell's own <code>Integer</code></span>
+        </div>
+      </div>
+
+      <h3>The bridge between the two worlds</h3>
+      <p>Because <code>PInteger</code> and Haskell's <code>Integer</code> are genuinely different
+        things, something has to convert between them. Two functions do that conversion, and
+        they're exactly what issue #803 is about putting to the test:</p>
+      <ul class="plain">
+        <li><code>pconstant</code> &mdash; takes an everyday Haskell value and lifts it <em>into</em> a Plutarch term.</li>
+        <li><code>plift</code> &mdash; takes a finished Plutarch term and evaluates it back <em>out</em> to a Haskell value.</li>
+      </ul>
+
+      <div class="flow" role="img" aria-label="Round trip diagram: Haskell value through pconstant to a Term, evaluated, then through plift back to a Haskell value">
+        <span class="node">Haskell value</span>
+        <span class="arrow"><span class="fn">pconstant</span>&rarr;</span>
+        <span class="node">Term s a</span>
+        <span class="arrow"><span class="fn">evaluate</span>&rarr;</span>
+        <span class="node">UPLC</span>
+        <span class="arrow"><span class="fn">plift</span>&rarr;</span>
+        <span class="node">Haskell value</span>
+      </div>
+      <p class="small-note">That's genuinely the whole primer. You do not need to understand
+        compilation internals, or the deeper encoding tricks Plutarch uses, to do this issue &mdash;
+        just this bridge, and the class that powers it, coming up next.</p>
+    </section>
+
+    <section class="chapter" id="liftable">
+      <div class="chapter-head"><span class="chapter-num">03</span><h2>What <code>PLiftable</code> promises</h2></div>
+      <p>Think of translating a document from English to French and back to English. If the
+        translation is faithful, you should land back on your original English text, word for
+        word. <strong><code>PLiftable</code> is exactly that round-trip promise</strong>, formalized
+        for the Haskell &harr; Plutarch bridge. It's defined in <code>Plutarch/Internal/Lift.hs</code>:</p>
+
+      <div class="code-block">
+        <div class="code-tab">Plutarch/Internal/Lift.hs &middot; ~line 164</div>
+        <pre><code>class PlutusType a => PLiftable (a :: S -> Type) where
+  type AsHaskell a  :: Type   -- the everyday Haskell mirror of `a`
+  type PlutusRepr a :: Type   -- an intermediate "Plutus universe" form
+
+  haskToRepr :: AsHaskell a  -> PlutusRepr a
+  reprToHask :: PlutusRepr a -> Either LiftError (AsHaskell a)
+  reprToPlut :: forall s. PlutusRepr a -> PLifted s a
+  plutToRepr :: (forall s. PLifted s a) -> Either LiftError (PlutusRepr a)</code></pre>
+      </div>
+
+      <p><code>AsHaskell a</code> is the everyday type standing in for Plutarch type
+        <code>a</code>. A few examples, so the pattern clicks:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Plutarch type <code>a</code></th><th>AsHaskell a</th></tr></thead>
+          <tbody>
+            <tr><td><code>PInteger</code></td><td><code>Integer</code></td></tr>
+            <tr><td><code>PMaybe PInteger</code></td><td><code>Maybe Integer</code></td></tr>
+            <tr><td><code>PEither a b</code></td><td><code>Either (AsHaskell a) (AsHaskell b)</code></td></tr>
+            <tr><td><code>PRational</code></td><td><code>PlutusTx.Rational</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small-note"><code>PlutusRepr a</code> is an intermediate stopover needed because
+        some of Plutarch's low-level containers can only hold a fixed set of "universe" types. For
+        this issue, treat it as plumbing you don't need to redesign &mdash; just something the round
+        trip passes through.</p>
+
+      <h3>The laws, in plain English first</h3>
+      <p>Everything below is one continuous round trip. Each arrow is a conversion; each law says
+        "go one way, then the other, and you're back where you started":</p>
+
+      <div class="lift-diagram">
+        <div class="composite top"><span class="label">pconstant</span><span class="line"></span><span class="head"></span></div>
+        <div class="lift-row">
+          <div class="lift-node"><div class="n-label">AsHaskell a</div><div class="n-cap">the Haskell value you write</div></div>
+          <div class="lift-hop">
+            <span class="hop-arrow"><span class="glyph">&rarr;</span> haskToRepr</span>
+            <span class="hop-arrow back"><span class="glyph">&larr;</span> reprToHask <em>(Either)</em></span>
+          </div>
+          <div class="lift-node"><div class="n-label">PlutusRepr a</div><div class="n-cap">Plutus&#8209;universe encoding</div></div>
+          <div class="lift-hop">
+            <span class="hop-arrow"><span class="glyph">&rarr;</span> reprToPlut</span>
+            <span class="hop-arrow back"><span class="glyph">&larr;</span> plutToRepr <em>(Either)</em></span>
+          </div>
+          <div class="lift-node"><div class="n-label">Term s a</div><div class="n-cap">the on&#8209;chain term</div></div>
+        </div>
+        <div class="composite bottom"><span class="head"></span><span class="line"></span><span class="label">plift</span></div>
+        <p class="diagram-caption">The two short round trips are the class's actual laws; the full
+          trip from end to end is <code>pconstant</code> (left&rarr;right) and <code>plift</code>
+          (right&rarr;left).</p>
+      </div>
+
+      <div class="law-block">
+        <p class="law-plain"><strong>In plain English:</strong> encode a Haskell value into its
+          Plutus-universe representation, then decode it straight back &mdash; you should get the
+          exact value you started with. That's Law&nbsp;1.</p>
+        <div class="law"><span class="law-tag">Law 1</span><span class="law-eq">reprToHask <span class="op">&#8728;</span> haskToRepr <span class="op">=</span> Right</span></div>
+        <p class="law-plain"><strong>In plain English:</strong> lift a representation into an
+          on-chain term, then evaluate that term straight back &mdash; same story. That's Law&nbsp;2.</p>
+        <div class="law"><span class="law-tag">Law 2</span><span class="law-eq">plutToRepr <span class="op">&#8728;</span> reprToPlut <span class="op">=</span> Right</span></div>
+        <p class="law-plain"><strong>Put both hops together</strong> and you get the headline
+          guarantee: encode a Haskell value all the way into an on-chain term, evaluate it back,
+          and you get exactly what you put in.</p>
+        <div class="law consequence"><span class="law-tag">Implies</span><span class="law-eq">plift <span class="op">&#8728;</span> pconstant <span class="op">=</span> id</span></div>
+      </div>
+
+      <p class="small-note">Instances built with the standard helpers &mdash;
+        <code>DeriveBuiltinPLiftable</code>, <code>DeriveDataPLiftable</code>,
+        <code>DeriveNewtypePLiftable</code> &mdash; satisfy these laws automatically. A hand-written
+        instance might not. That gap is exactly what tests catch.</p>
+    </section>
+
+    <section class="chapter" id="testing">
+      <div class="chapter-head"><span class="chapter-num">04</span><h2>How computers check this automatically</h2></div>
+      <p>If you haven't written automated tests before, here's the short version, because it
+        matters for understanding <em>why</em> this issue exists at all.</p>
+
+      <div class="compare">
+        <div class="compare-card">
+          <h4>Unit test</h4>
+          <p>You write a specific example by hand: input, and the exact output you expect. Great
+            for pinning down known edge cases, but you only ever check what you thought to write down.</p>
+          <code class="snip">reverse [1,2,3] == [3,2,1]</code>
+        </div>
+        <div class="compare-card">
+          <h4>Property-based test</h4>
+          <p>You state a general rule instead of one example, and a tool (here, QuickCheck)
+            throws hundreds of random inputs at it, hunting for any case that breaks the rule.</p>
+          <code class="snip">reverse (reverse xs) == xs
+-- checked for ~hundreds of
+-- random xs, automatically</code>
+        </div>
+      </div>
+
+      <p>Because it's automatic and random, a property test is far more likely to catch a subtle
+        round-trip bug than a handful of examples a human thought to write. This project has a
+        ready-made property-test bundle, in <code>plutarch-testlib/Plutarch/Test/Laws.hs</code>,
+        that turns the <code>PLiftable</code> laws from the last section directly into checkable
+        properties:</p>
+
+      <div class="code-block">
+        <div class="code-tab">plutarch-testlib/Plutarch/Test/Laws.hs &middot; ~line 298</div>
+        <pre><code>checkPLiftableLaws ::
+  forall (a :: S -> Type).
+  ( Arbitrary (AsHaskell a)
+  , Pretty    (AsHaskell a)
+  , Eq        (AsHaskell a)
+  , Show      (AsHaskell a)
+  , PLiftable a
+  ) =>
+  [TestTree]
+checkPLiftableLaws =
+  [ testProperty "plutToRepr . reprToPlut = Right" ...
+  , testProperty "reprToHask . haskToRepr = Right" ...
+  , testProperty "plift . pconstant = id"          ...
+  ]</code></pre>
+      </div>
+
+      <div class="callout explain">
+        <span class="callout-tag">What's that <code>@(...)</code> syntax?</span>
+        <p>You call this function <strong>at the type level</strong>:
+          <code>checkPLiftableLaws @(PMaybe PInteger)</code>. The <code>@</code> is called a
+          <em>type application</em> &mdash; it's how you tell the compiler exactly which type to
+          plug in, the same way a normal function argument tells it which value to plug in.
+          Nothing more mysterious than that.</p>
+      </div>
+
+      <p>Here's that call in its natural habitat, the existing test for <code>PMaybe</code>:</p>
+      <div class="code-block">
+        <div class="code-tab">plutarch-testlib/test/Plutarch/Test/Suite/Plutarch/Maybe.hs</div>
+        <pre><code>testGroup (instanceOfType @(S -> Type) @(PMaybe PInteger) "PLiftable") $
+  checkPLiftableLaws @(PMaybe PInteger)</code></pre>
+      </div>
+      <p>Notice that <code>checkPLiftableLaws</code> needs <code>Arbitrary</code>,
+        <code>Pretty</code>, <code>Eq</code>, and <code>Show</code> for <code>AsHaskell a</code>
+        &mdash; that's how QuickCheck knows how to generate random values, print them when a test
+        fails, and compare them. Hold onto that list; it's exactly where the real work in this
+        issue lives, in section 06.</p>
+    </section>
+
+    <section class="chapter" id="gap">
+      <div class="chapter-head"><span class="chapter-num">05</span><h2>Where the gap actually is</h2></div>
+      <p>Issue #803 says only a couple of types have this safety net so far. Cross-checking every
+        call site of <code>checkPLiftableLaws</code> / <code>checkLedgerProperties</code>
+        confirms exactly which:</p>
+
+      <div class="coverage">
+        <div class="cov-row head"><span>Type</span><span>Status</span><span>Note</span></div>
+        <div class="cov-row"><span class="cov-type">PMaybe / PMaybeData</span><span class="pill covered">Covered</span><span class="cov-note">Tested directly in <code>Maybe.hs</code> &mdash; the pattern you'll copy.</span></div>
+        <div class="cov-row"><span class="cov-type">PFoo (DeriveAsTag)</span><span class="pill covered">Covered</span><span class="cov-note">In <code>DeriveAsTag.hs</code>, which also shows how to add missing instances locally.</span></div>
+        <div class="cov-row"><span class="cov-type">PRawValue, PMap, PEitherData</span><span class="pill covered">Covered</span><span class="cov-note">Via <code>checkLedgerProperties</code>, which calls <code>checkPLiftableLaws</code> internally.</span></div>
+        <div class="cov-row"><span class="cov-type">PEither</span><span class="pill gap">Target</span><span class="cov-note">Only the <em>Data</em> variant (<code>PEitherData</code>) is tested; plain <code>PEither</code> isn't.</span></div>
+        <div class="cov-row"><span class="cov-type">PRational</span><span class="pill gap">Target</span><span class="cov-note">No <code>Arbitrary</code>/<code>Pretty</code> for <code>PlutusTx.Rational</code> yet.</span></div>
+        <div class="cov-row"><span class="cov-type">PPair</span><span class="pill gap">Target</span><span class="cov-note"><code>Pair.hs</code> only has golden (example-based) tests so far. A <code>PLiftable</code> instance wasn't found &mdash; verify before committing to it.</span></div>
+        <div class="cov-row"><span class="cov-type">PBuiltinPair</span><span class="pill gap">Fallback</span><span class="cov-note">Already has a confirmed <code>PLiftable</code> instance &mdash; the safer starting point if <code>PPair</code> turns out not to have one.</span></div>
+      </div>
+      <p class="small-note">You can confirm this yourself with one command:
+        <code>grep -rn "checkPLiftableLaws\|checkLedgerProperties" plutarch-testlib/test</code>.
+        Running greps like this to check a claim &mdash; even one from a tutorial &mdash; is a normal
+        and healthy habit, not a sign you're behind.</p>
+    </section>
+
+    <section class="chapter" id="fix">
+      <div class="chapter-head"><span class="chapter-num">06</span><h2>The fix, step by step</h2></div>
+
+      <h3>The easy 90%</h3>
+      <p>For each target type, you add one small group to its test file &mdash; the exact same
+        shape as the <code>Maybe.hs</code> example above:</p>
+      <div class="code-block">
+        <div class="code-tab">e.g. plutarch-testlib/test/Plutarch/Test/Suite/Plutarch/Either.hs</div>
+        <pre><code>, testGroup (instanceOfType @(S -> Type) @(PEither PInteger PByteString) "PLiftable") $
+    checkPLiftableLaws @(PEither PInteger PByteString)</code></pre>
+      </div>
+      <p>Pick concrete, simple element types &mdash; <code>PInteger</code>, <code>PBool</code>,
+        <code>PByteString</code>, <code>PString</code> &mdash; rather than something generic, so
+        every constraint the function needs can actually be resolved.</p>
+
+      <h3>The real 10%: the missing instances</h3>
+      <p>Remember the constraint list from section 04: <code>checkPLiftableLaws @a</code> needs
+        <code>Arbitrary</code>, <code>Pretty</code>, <code>Eq</code>, <code>Show</code> for
+        <code>AsHaskell a</code>. <code>Eq</code> and <code>Show</code> almost always already
+        exist. The two that don't:</p>
+      <ul class="plain">
+        <li><code>AsHaskell (PEither PInteger PByteString) = Either Integer ByteString</code>.
+          QuickCheck already ships <code>Arbitrary (Either a b)</code>, but the pretty-printing
+          library has <strong>no <code>Pretty (Either a b)</code></strong> &mdash; you write one.</li>
+        <li><code>AsHaskell PRational = PlutusTx.Rational</code>. You'll likely need
+          <strong>both</strong> an <code>Arbitrary</code> and a <code>Pretty</code> instance here.</li>
+      </ul>
+      <p>This is exactly why the issue says these types have "been skipped" &mdash; the test line
+        itself is trivial; supplying these instances is the actual task.</p>
+
+      <div class="callout explain">
+        <span class="callout-tag">Wait, what's an "instance", concretely?</span>
+        <p>Recall from the glossary: an instance is the real code fulfilling a typeclass's
+          promise for one type &mdash; e.g. "here's exactly how to print an
+          <code>Either Integer ByteString</code> nicely, satisfying the <code>Pretty</code>
+          typeclass." You'd normally write that instance next to the typeclass's own definition,
+          or next to the type's own definition. Here you own <em>neither</em> &mdash;
+          <code>Either</code> and <code>Pretty</code> both come from other libraries &mdash; so
+          what you write is called an <strong>orphan instance</strong>. Haskell allows this (with
+          a mild warning), and it's already the accepted pattern throughout this test library.
+          Nothing to worry about.</p>
+      </div>
+
+      <p>Follow the existing convention for <em>where</em> to put these instances &mdash;
+        <code>DeriveAsTag.hs</code> shows the local pattern, defined right beside the test that needs them:</p>
+      <div class="code-block">
+        <div class="code-tab">plutarch-testlib/test/Plutarch/Test/Suite/Plutarch/DeriveAsTag.hs</div>
+        <pre><code>instance Pretty (PFoo s) where
+  pretty = pretty . show
+
+instance Arbitrary (PFoo s) where
+  arbitrary = elements [A, B, C, D, E]</code></pre>
+      </div>
+      <p class="small-note">If an instance is reusable across multiple test files (like
+        <code>Pretty (Either a b)</code> probably is), put it in the shared home instead:
+        <code>plutarch-testlib/Plutarch/Test/QuickCheck.hs</code> (see the
+        <code>deriving newtype instance Pretty ...</code> block, around line 184).</p>
+
+      <div class="callout watch">
+        <span class="callout-tag">Watch out</span>
+        <p><code>Plutarch/Pair.hs</code> derives <code>PlutusType</code> via
+          <code>DeriveAsSOPStruct</code>, but no <code>PLiftable</code> instance turned up when
+          searching that file. Check first: <code>grep -n "PLiftable" Plutarch/Pair.hs</code>. If
+          it really is missing, either add the appropriate <code>deriving ... PLiftable</code>
+          line yourself (a bigger, library-side change worth flagging in your PR description) or
+          start with <code>PBuiltinPair</code> instead, which already has one, and note
+          <code>PPair</code> as a follow-up. Prefer the smallest change that's still correct.</p>
+      </div>
+
+      <div class="callout check">
+        <span class="callout-tag">A reassurance for your first compiler errors</span>
+        <p>When you're missing an instance, GHC (the Haskell compiler) will say something like
+          <code>No instance for (Pretty (Either Integer ByteString))</code>. Read that as a
+          precise to-do item, not a failure: it's telling you the exact type and exact typeclass
+          you still need to satisfy. Compiler errors in Haskell are usually this specific &mdash;
+          treat them as directions, not scolding.</p>
+      </div>
+    </section>
+
+    <section class="chapter" id="build">
+      <div class="chapter-head"><span class="chapter-num">07</span><h2>Build &amp; run</h2></div>
+      <p>Two tools do the heavy lifting here, and it's worth knowing what each is for before you
+        type the commands:</p>
+      <ul class="plain">
+        <li><strong>Nix</strong> builds an identical, reproducible toolbox on your machine &mdash;
+          the right compiler version, the right supporting libraries &mdash; so "it works on my
+          machine but not yours" stops being a problem.</li>
+        <li><strong>Cabal</strong> is Haskell's build tool. Once the toolbox exists, Cabal is what
+          actually compiles your code and runs the tests.</li>
+      </ul>
+      <div class="code-block">
+        <div class="code-tab">shell</div>
+        <pre><code>nix develop          # first run downloads a lot; pins GHC 9.8.4 + native deps
+cabal build all
+cabal test plutarch-testlib</code></pre>
+      </div>
+      <p>While you're iterating, filter down to just the group you added (tasty's pattern match),
+        so you're not waiting on the whole suite every time:</p>
+      <div class="code-block">
+        <div class="code-tab">shell</div>
+        <pre><code>cabal test plutarch-testlib --test-options='--pattern "PLiftable"'</code></pre>
+      </div>
+      <p class="small-note">Pure law tests like these shouldn't touch any golden (reference-file)
+        output. If a golden diff ever does appear and the change is genuinely intentional:
+        <code>cabal test plutarch-testlib --test-options='--accept'</code>.</p>
+    </section>
+
+    <section class="chapter" id="order">
+      <div class="chapter-head"><span class="chapter-num">08</span><h2>Suggested order of attack</h2></div>
+      <p class="lede">Start with the smallest, most certain win, then build confidence from there.
+        Each type below is an independent, compiler-guided change &mdash; good for small,
+        reviewable commits rather than one giant one.</p>
+      <ol class="attack">
+        <li><div><div class="attack-head"><span class="attack-title">PEither PInteger PByteString</span><span class="tag">Quick win</span></div>
+          <p>In <code>Either.hs</code>: add the <code>testGroup</code> line; supply
+            <code>Pretty (Either a b)</code> &mdash; <code>Arbitrary</code> already exists.</p></div></li>
+        <li><div><div class="attack-head"><span class="attack-title">PRational</span><span class="tag">Core case</span></div>
+          <p>In <code>Rational.hs</code>: add both <code>Arbitrary</code> and <code>Pretty</code>
+            for <code>PlutusTx.Rational</code>, then the <code>testGroup</code> line.</p></div></li>
+        <li><div><div class="attack-head"><span class="attack-title">PBuiltinPair (or PPair)</span><span class="tag">Check first</span></div>
+          <p>In <code>Pair.hs</code>: confirm whether <code>PPair</code> actually has a
+            <code>PLiftable</code> instance before committing to it; fall back to
+            <code>PBuiltinPair</code> if it doesn't.</p></div></li>
+        <li><div><div class="attack-head"><span class="attack-title">Anything else uncovered</span><span class="tag">Sweep</span></div>
+          <p>Grep for other types that have a <code>PLiftable</code> instance but no law coverage
+            yet, and add them the same way.</p></div></li>
+      </ol>
+    </section>
+
+    <section class="chapter" id="files">
+      <div class="chapter-head"><span class="chapter-num">09</span><h2>Key files</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Why it matters</th></tr></thead>
+          <tbody>
+            <tr><td><code>Plutarch/Internal/Lift.hs</code></td><td><code>PLiftable</code> class, laws, <code>AsHaskell</code>/<code>PlutusRepr</code>, builtin instances</td></tr>
+            <tr><td><code>plutarch&#8209;testlib/Plutarch/Test/Laws.hs</code></td><td><code>checkPLiftableLaws</code> definition &mdash; the 3 properties</td></tr>
+            <tr><td><code>.../Suite/Plutarch/Maybe.hs</code></td><td>Canonical usage to copy</td></tr>
+            <tr><td><code>.../Suite/Plutarch/DeriveAsTag.hs</code></td><td>How to supply <code>Arbitrary</code>/<code>Pretty</code> next to a test</td></tr>
+            <tr><td><code>.../Suite/Plutarch/{Either,Pair,Rational}.hs</code></td><td>The files you'll actually edit</td></tr>
+            <tr><td><code>plutarch&#8209;testlib/Plutarch/Test/QuickCheck.hs</code></td><td>Home for shared <code>Pretty</code>/<code>Arbitrary</code> orphans</td></tr>
+            <tr><td><code>plutarch&#8209;testlib/test/Test.hs</code></td><td>Where suites are registered &mdash; confirm your group actually runs</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="chapter" id="pr">
+      <div class="chapter-head"><span class="chapter-num">10</span><h2>Turning this into a real pull request</h2></div>
+      <p>If you've never contributed to an open-source project before, here's the standard shape
+        that this whole process follows, end to end:</p>
+      <ol class="workflow">
+        <li><div><div class="wf-title">Fork the repo</div>
+          <p>Make your own copy of the repository on GitHub (skip this if you already have push
+            access and can branch directly).</p></div></li>
+        <li><div><div class="wf-title">Clone it to your machine</div>
+          <p><code>git clone &lt;your-fork-url&gt;</code> &mdash; downloads the code so you can
+            edit it locally.</p></div></li>
+        <li><div><div class="wf-title">Create a branch for this change</div>
+          <p><code>git checkout -b fix/803-liftable-coverage</code> &mdash; keeps your work
+            separate from the main line of development until it's reviewed.</p></div></li>
+        <li><div><div class="wf-title">Make the edits from section 06</div>
+          <p>Add the missing instances and <code>testGroup</code> lines, running the build/test
+            commands from section 07 until everything is green.</p></div></li>
+        <li><div><div class="wf-title">Commit with a clear message</div>
+          <p>Explain <em>why</em>, not just <em>what</em> &mdash; e.g. "Add PLiftable law coverage
+            for PEither, PRational, PPair (#803)."</p></div></li>
+        <li><div><div class="wf-title">Push and open the pull request</div>
+          <p><code>git push</code>, then open a PR against the upstream repo. Reference
+            "Fixes #803" (or "Contributes to #803") in the description so GitHub links it
+            automatically.</p></div></li>
+        <li><div><div class="wf-title">Expect review &mdash; and that's a good thing</div>
+          <p>A maintainer will read your change and may ask for adjustments. That's the normal,
+            healthy shape of the process, not a rejection of you or your work.</p></div></li>
+      </ol>
+    </section>
+
+  </main>
+
+  <div class="closing">
+    <p>Everyone doing this work today once stared at <code>S -> Type</code>, or their first
+      "No instance for..." error, and felt exactly the way you might feel right now. That feeling
+      is not a sign you're in the wrong place.</p>
+    <p>This fix is small, compiler-guided, and entirely within reach as a first contribution
+      &mdash; that's precisely why it landed on the easy list in the first place.</p>
+  </div>
+
+  <footer class="colophon">
+    Personal learning note for Plutonomicon/plutarch&#8209;plutus issue&nbsp;#803, rookie edition.
+    Not part of upstream documentation.
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.rail a'));
+    var sections = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); }).filter(Boolean);
+    if (!('IntersectionObserver' in window) || sections.length === 0) return;
+    var byId = {};
+    links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = byId[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+    sections.forEach(function (s) { observer.observe(s); });
+  })();
+
+  (function () {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var root = document.documentElement;
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('plutarch-learn-theme', next); } catch (e) {}
+    });
+  })();
+</script>
